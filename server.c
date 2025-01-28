@@ -34,7 +34,6 @@
 #define MAXBUF 1024
 #define DEBUG_FLAG 1
 
-void recvFromClient(int clientSocket);
 int checkArgs(int argc, char *argv[]);
 void serverControl(int mainServerSocket);
 void addNewSocket(int mainServerSocket);
@@ -55,26 +54,6 @@ int main(int argc, char *argv[]) {
 	close(mainServerSocket);
 
 	return 0;
-}
-
-void recvFromClient(int clientSocket) {
-	uint8_t dataBuffer[MAXBUF];
-	int messageLen = recvPDU(clientSocket, dataBuffer, MAXBUF);
-	
-	/// Print data from the client_socket ///
-	if (messageLen > 0) {
-		printf("Message received on socket: %d\nLength: %d\nData: %s\n", clientSocket, messageLen, dataBuffer + 2);
-		removeFromPollSet(clientSocket);
-		close(clientSocket);
-
-	} else if (messageLen == 0) {				//Connection closed
-		removeFromPollSet(clientSocket);
-		close(clientSocket);
-
-	} else {									//1 of 2 errors: Buffer < PDU length or default condition in recv() was reached
-		exit(1);
-
-	}
 }
 
 int checkArgs(int argc, char *argv[]) {
@@ -119,11 +98,26 @@ void serverControl(int mainServerSocket) {
 void addNewSocket(int mainServerSocket) {
 	int clientSocket;
 	
-	clientSocket = tcpAccept(mainServerSocket, DEBUG_FLAG);
-	addToPollSet(clientSocket);
+	clientSocket = tcpAccept(mainServerSocket, DEBUG_FLAG);		//Accept client
+	addToPollSet(clientSocket);									//Add client to polling table
 }
 
+/// Print client's message ///
 void processClient(int clientSocket) {
-	recvFromClient(clientSocket);
-}
+	uint8_t dataBuffer[MAXBUF];
+	int messageLen = recvPDU(clientSocket, dataBuffer, MAXBUF);
+	
+	/// Print data from the client_socket ///
+	if (messageLen > 0) {						//Message in buffer
+		printf("Message received on socket: %d\nLength: %d\nData: %s\n\n", clientSocket, messageLen, dataBuffer + 2);
 
+	} else if (messageLen == 0) {				//Client connection closed
+		printf("Client has closed their connection\n");
+		removeFromPollSet(clientSocket);
+		close(clientSocket);
+
+	} else {									//Error detection: Buffer < PDU length or default condition in recv() was reached
+		exit(1);
+
+	}
+}

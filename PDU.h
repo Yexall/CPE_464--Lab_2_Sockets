@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <stdlib.h>         //For exit()
 #include <string.h>         //For memcpy()
-#include <arpa/inet.h>      //For ntohl()
+#include <arpa/inet.h>      //For ntohs()
 
 #include "safeUtil.h"
 

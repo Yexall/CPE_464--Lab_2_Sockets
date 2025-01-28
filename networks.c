@@ -41,7 +41,7 @@ int tcpServerSetup(int serverPort) {
 	memset(&serverAddress, 0, sizeof(struct sockaddr_in6));
 	serverAddress.sin6_family= AF_INET6;         		
 	serverAddress.sin6_addr = in6addr_any;   
-	serverAddress.sin6_port= htons(5000);    //serverPort     
+	serverAddress.sin6_port= htons(serverPort);    //serverPort     
 
 	// bind the name (address) to a port 
 	if (bind(mainServerSocket, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0) {
